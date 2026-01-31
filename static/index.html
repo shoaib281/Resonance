@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resonance — Emergent Behaviour Engine</title>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --surface2: #1a1a26;
+  --border: #2a2a3a;
+  --text: #e8e8f0;
+  --text2: #8888aa;
+  --accent: #6c5ce7;
+  --accent2: #a29bfe;
+  --green: #00e676;
+  --red: #ff5252;
+  --orange: #ffab40;
+  --cyan: #18ffff;
+  --pink: #ff6090;
+  --blue: #448aff;
+  --radius: 12px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── LAYOUT ── */
+.app {
+  display: grid;
+  grid-template-columns: 340px 1fr 340px;
+  grid-template-rows: 64px 1fr;
+  height: 100vh;
+  gap: 0;
+}
+
+/* ── HEADER ── */
+.header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  z-index: 10;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--accent), var(--cyan));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+
+.logo h1 {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.logo span {
+  font-size: 12px;
+  color: var(--text2);
+  font-weight: 400;
+  margin-left: 8px;
+  padding: 2px 8px;
+  background: var(--surface2);
+  border-radius: 4px;
+}
+
+.header-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text2);
+}
+
+.status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--text2);
+}
+
+.status-dot.active {
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* ── LEFT PANEL ── */
+.panel-left {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panel-left::-webkit-scrollbar { width: 4px; }
+.panel-left::-webkit-scrollbar-track { background: transparent; }
+.panel-left::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.card-header {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text2);
+  margin-bottom: 12px;
+}
+
+/* ── FORM ── */
+.field { margin-bottom: 14px; }
+
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text2);
+  margin-bottom: 6px;
+}
+
+.field textarea, .field input[type="text"], .field select {
+  width: 100%;
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.field textarea:focus, .field input:focus, .field select:focus {
+  border-color: var(--accent);
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+.field select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238888aa' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+/* ── SLIDERS ── */
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.slider-row label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text2);
+  min-width: 80px;
+}
+
+.slider-row input[type="range"] {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  outline: none;
+}
+
+.slider-row input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(108, 92, 231, 0.4);
+  transition: transform 0.15s;
+}
+
+.slider-row input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.slider-val {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent2);
+  min-width: 24px;
+  text-align: right;
+}
+
+/* ── BUTTON ── */
+.btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #5a4bd1);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(108, 92, 231, 0.4);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── METRICS ── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.metric {
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.metric-value {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.metric-label {
+  font-size: 10px;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+.metric-value.green { color: var(--green); }
+.metric-value.orange { color: var(--orange); }
+.metric-value.red { color: var(--red); }
+.metric-value.cyan { color: var(--cyan); }
+.metric-value.blue { color: var(--blue); }
+.metric-value.pink { color: var(--pink); }
+
+/* ── EVOLUTION CARD ── */
+.evo-analysis {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.evo-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.evo-tag {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.evo-tag.strength { background: rgba(0, 230, 118, 0.15); color: var(--green); }
+.evo-tag.weakness { background: rgba(255, 82, 82, 0.15); color: var(--red); }
+
+.evo-revised {
+  font-size: 12px;
+  color: var(--accent2);
+  background: rgba(108, 92, 231, 0.1);
+  border-radius: 8px;
+  padding: 10px;
+  border-left: 3px solid var(--accent);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* ── CENTER: GRAPH ── */
+.graph-container {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.graph-overlay {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  display: flex;
+  gap: 12px;
+}
+
+.graph-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text2);
+  background: rgba(10, 10, 15, 0.8);
+  padding: 6px 10px;
+  border-radius: 6px;
+  backdrop-filter: blur(8px);
+}
+
+.legend-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+
+/* ── TOOLTIP ── */
+.tooltip {
+  position: absolute;
+  display: none;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  pointer-events: none;
+  z-index: 20;
+  min-width: 180px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+
+.tooltip-name {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.tooltip-detail {
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+
+/* ── RIGHT PANEL: FEED ── */
+.panel-right {
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.panel-right::-webkit-scrollbar { width: 4px; }
+.panel-right::-webkit-scrollbar-track { background: transparent; }
+.panel-right::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.feed-header {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text2);
+  margin-bottom: 4px;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+  padding-bottom: 8px;
+  z-index: 2;
+}
+
+.feed-item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  animation: slideIn 0.3s ease-out;
+  transition: border-color 0.2s;
+}
+
+.feed-item:hover {
+  border-color: var(--accent);
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.feed-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.feed-agent {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.feed-action {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.feed-action.like { background: rgba(0, 230, 118, 0.15); color: var(--green); }
+.feed-action.comment { background: rgba(68, 138, 255, 0.15); color: var(--blue); }
+.feed-action.share, .feed-action.quote_share { background: rgba(24, 255, 255, 0.15); color: var(--cyan); }
+.feed-action.mock { background: rgba(255, 82, 82, 0.15); color: var(--red); }
+.feed-action.ignore { background: rgba(136, 136, 170, 0.1); color: var(--text2); }
+
+.feed-content {
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+.feed-reasoning {
+  font-size: 11px;
+  color: var(--text2);
+  font-style: italic;
+  margin-top: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}
+
+/* ── PHASE BANNER ── */
+.phase-banner {
+  background: linear-gradient(90deg, rgba(108, 92, 231, 0.2), transparent);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent2);
+}
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text2);
+  text-align: center;
+  gap: 12px;
+}
+
+.empty-state-icon {
+  width: 64px; height: 64px;
+  border-radius: 16px;
+  background: var(--surface2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+
+.empty-state h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.empty-state p {
+  font-size: 13px;
+  max-width: 240px;
+  line-height: 1.5;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 1100px) {
+  .app {
+    grid-template-columns: 300px 1fr 280px;
+  }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon">R</div>
+      <h1>Resonance</h1>
+      <span>Emergent Behaviour Engine</span>
+    </div>
+    <div class="header-status">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">Ready</span>
+    </div>
+  </header>
+
+  <!-- LEFT PANEL -->
+  <aside class="panel-left">
+    <!-- Campaign Input -->
+    <div class="card">
+      <div class="card-header">Campaign Seed</div>
+      <div class="field">
+        <label>Ad Copy</label>
+        <textarea id="content" rows="3" placeholder="Write your ad copy here...">Tired of satisfying coffee? Try MudBrew — it tastes like a swamp and costs twice as much. You're welcome.</textarea>
+      </div>
+      <div class="field">
+        <label>Image Description</label>
+        <input type="text" id="imageDesc" placeholder="Describe the image..." value="A hipster holding a comically oversized mug in a foggy forest">
+      </div>
+      <div class="field">
+        <label>Target Audience</label>
+        <input type="text" id="audience" placeholder="Who are you targeting?" value="Gen Z coffee enthusiasts and meme-savvy millennials">
+      </div>
+      <div class="field">
+        <label>Goal</label>
+        <select id="goal">
+          <option value="engagement">Engagement</option>
+          <option value="brand_awareness">Brand Awareness</option>
+          <option value="clicks">Clicks</option>
+          <option value="controversy">Controversy</option>
+        </select>
+      </div>
+
+      <!-- Sliders -->
+      <div class="slider-row">
+        <label>Agents</label>
+        <input type="range" id="numAgents" min="5" max="50" step="5" value="15">
+        <span class="slider-val" id="numAgentsVal">15</span>
+      </div>
+      <div class="slider-row">
+        <label>Generations</label>
+        <input type="range" id="maxGens" min="1" max="6" step="1" value="2">
+        <span class="slider-val" id="maxGensVal">2</span>
+      </div>
+      <div class="slider-row">
+        <label>Ticks / Gen</label>
+        <input type="range" id="numTicks" min="1" max="5" step="1" value="2">
+        <span class="slider-val" id="numTicksVal">2</span>
+      </div>
+
+      <button class="btn btn-primary" id="runBtn" onclick="startRun()">Launch Simulation</button>
+    </div>
+
+    <!-- Metrics -->
+    <div class="card" id="metricsCard" style="display:none;">
+      <div class="card-header">Metrics — <span id="metricsGen">Gen 1</span></div>
+      <div class="metrics-grid">
+        <div class="metric"><div class="metric-value green" id="mLikes">0</div><div class="metric-label">Likes</div></div>
+        <div class="metric"><div class="metric-value blue" id="mComments">0</div><div class="metric-label">Comments</div></div>
+        <div class="metric"><div class="metric-value cyan" id="mShares">0</div><div class="metric-label">Shares</div></div>
+        <div class="metric"><div class="metric-value red" id="mMocks">0</div><div class="metric-label">Mocks</div></div>
+        <div class="metric"><div class="metric-value orange" id="mSentiment">0</div><div class="metric-label">Sentiment</div></div>
+        <div class="metric"><div class="metric-value pink" id="mFitness">0</div><div class="metric-label">Fitness</div></div>
+      </div>
+    </div>
+
+    <!-- Evolution -->
+    <div class="card" id="evoCard" style="display:none;">
+      <div class="card-header">Evolution — <span id="evoGen">Gen 1 → 2</span></div>
+      <div class="evo-analysis" id="evoAnalysis"></div>
+      <div class="evo-tags" id="evoStrengths"></div>
+      <div class="evo-tags" id="evoWeaknesses"></div>
+      <div class="evo-revised" id="evoRevised"></div>
+    </div>
+  </aside>
+
+  <!-- CENTER: GRAPH -->
+  <main class="graph-container">
+    <canvas id="graphCanvas"></canvas>
+    <div class="tooltip" id="tooltip">
+      <div class="tooltip-name" id="ttName"></div>
+      <div class="tooltip-detail" id="ttDetail"></div>
+    </div>
+    <div class="graph-overlay">
+      <div class="graph-legend"><div class="legend-dot" style="background:var(--green)"></div> Like</div>
+      <div class="graph-legend"><div class="legend-dot" style="background:var(--blue)"></div> Comment</div>
+      <div class="graph-legend"><div class="legend-dot" style="background:var(--cyan)"></div> Share</div>
+      <div class="graph-legend"><div class="legend-dot" style="background:var(--red)"></div> Mock</div>
+    </div>
+    <div class="empty-state" id="emptyState">
+      <div class="empty-state-icon">R</div>
+      <h3>No simulation running</h3>
+      <p>Configure your campaign seed and launch a simulation to see emergent behaviour unfold.</p>
+    </div>
+  </main>
+
+  <!-- RIGHT PANEL: FEED -->
+  <aside class="panel-right">
+    <div class="feed-header">Live Activity Feed</div>
+    <div id="feed"></div>
+  </aside>
+
+</div>
+
+<script>
+// ── STATE ──
+const nodes = [];
+const edges = [];
+const nodeMap = {};
+let canvas, ctx, W, H;
+let animFrame;
+let running = false;
+const particles = [];
+const ripples = [];
+const actionColors = {
+  like: '#00e676', comment: '#448aff', share: '#18ffff',
+  quote_share: '#18ffff', mock: '#ff5252', ignore: '#444466'
+};
+
+// ── SLIDER WIRING ──
+document.querySelectorAll('.slider-row input[type="range"]').forEach(slider => {
+  const valSpan = document.getElementById(slider.id + 'Val');
+  slider.addEventListener('input', () => { valSpan.textContent = slider.value; });
+});
+
+// ── CANVAS SETUP ──
+function initCanvas() {
+  canvas = document.getElementById('graphCanvas');
+  ctx = canvas.getContext('2d');
+  resize();
+  window.addEventListener('resize', resize);
+  canvas.addEventListener('mousemove', onMouseMove);
+  canvas.addEventListener('mouseleave', () => {
+    document.getElementById('tooltip').style.display = 'none';
+  });
+}
+
+function resize() {
+  const container = canvas.parentElement;
+  W = container.clientWidth;
+  H = container.clientHeight;
+  canvas.width = W * devicePixelRatio;
+  canvas.height = H * devicePixelRatio;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+}
+
+// ── PHYSICS ──
+function initPhysics() {
+  const cx = W / 2, cy = H / 2;
+  nodes.forEach((n, i) => {
+    const angle = (i / nodes.length) * Math.PI * 2;
+    const r = 120 + Math.random() * 100;
+    n.x = cx + Math.cos(angle) * r;
+    n.y = cy + Math.sin(angle) * r;
+    n.vx = 0;
+    n.vy = 0;
+    n.radius = 6 + n.influence * 14;
+    n.color = '#6c5ce7';
+    n.pulseT = 0;
+    n.glowColor = null;
+  });
+}
+
+function tick() {
+  const dt = 0.3;
+  const cx = W / 2, cy = H / 2;
+
+  // Center gravity
+  nodes.forEach(n => {
+    n.vx += (cx - n.x) * 0.0005;
+    n.vy += (cy - n.y) * 0.0005;
+  });
+
+  // Repulsion
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      const a = nodes[i], b = nodes[j];
+      let dx = a.x - b.x, dy = a.y - b.y;
+      let d2 = dx * dx + dy * dy;
+      if (d2 < 1) d2 = 1;
+      const f = 800 / d2;
+      a.vx += dx * f * dt;
+      a.vy += dy * f * dt;
+      b.vx -= dx * f * dt;
+      b.vy -= dy * f * dt;
+    }
+  }
+
+  // Attraction along edges
+  edges.forEach(e => {
+    const a = nodeMap[e.source], b = nodeMap[e.target];
+    if (!a || !b) return;
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const d = Math.sqrt(dx * dx + dy * dy);
+    if (d < 1) return;
+    const f = (d - 100) * 0.003;
+    a.vx += (dx / d) * f;
+    a.vy += (dy / d) * f;
+    b.vx -= (dx / d) * f;
+    b.vy -= (dy / d) * f;
+  });
+
+  // Damping + update
+  nodes.forEach(n => {
+    n.vx *= 0.92;
+    n.vy *= 0.92;
+    n.x += n.vx;
+    n.y += n.vy;
+    // Bounds
+    n.x = Math.max(n.radius + 20, Math.min(W - n.radius - 20, n.x));
+    n.y = Math.max(n.radius + 20, Math.min(H - n.radius - 20, n.y));
+    // Pulse decay
+    if (n.pulseT > 0) n.pulseT -= 0.02;
+  });
+
+  // Particles
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.t += p.speed;
+    if (p.t >= 1) { particles.splice(i, 1); continue; }
+    const a = nodeMap[p.source], b = nodeMap[p.target];
+    if (!a || !b) { particles.splice(i, 1); continue; }
+    p.x = a.x + (b.x - a.x) * p.t;
+    p.y = a.y + (b.y - a.y) * p.t;
+  }
+
+  // Ripples
+  for (let i = ripples.length - 1; i >= 0; i--) {
+    const r = ripples[i];
+    r.t += 0.015;
+    if (r.t >= 1) { ripples.splice(i, 1); continue; }
+    if (r.t < 0) continue; // staggered delay
+    r.radius = r.maxRadius * r.t;
+    r.alpha = (1 - r.t) * 0.45;
+  }
+}
+
+// ── DRAW ──
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  // Draw subtle grid
+  ctx.strokeStyle = 'rgba(42, 42, 58, 0.3)';
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+  for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+  // Edges with arrows
+  edges.forEach(e => {
+    const a = nodeMap[e.source], b = nodeMap[e.target];
+    if (!a || !b) return;
+
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const d = Math.sqrt(dx * dx + dy * dy);
+    if (d < 1) return;
+    const nx = dx / d, ny = dy / d;
+
+    // Edge line
+    const alpha = e.flash > 0 ? 0.4 : 0.08;
+    const color = e.flash > 0 ? (e.flashColor || '#6c5ce7') : '#6c5ce7';
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = e.flash > 0 ? 1.5 : 0.5;
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+
+    // Arrow head
+    if (d > 40) {
+      const arrowSize = 6;
+      const ax = b.x - nx * (b.radius + 4);
+      const ay = b.y - ny * (b.radius + 4);
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(ax - nx * arrowSize + ny * arrowSize * 0.4, ay - ny * arrowSize - nx * arrowSize * 0.4);
+      ctx.lineTo(ax - nx * arrowSize - ny * arrowSize * 0.4, ay - ny * arrowSize + nx * arrowSize * 0.4);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // Flash decay
+    if (e.flash > 0) e.flash -= 0.015;
+  });
+
+  // Particles
+  particles.forEach(p => {
+    const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, 6);
+    grad.addColorStop(0, p.color);
+    grad.addColorStop(1, 'transparent');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+    ctx.fill();
+    // Core
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // Ripples
+  ripples.forEach(r => {
+    const n = nodeMap[r.nodeId];
+    if (!n) return;
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, r.radius, 0, Math.PI * 2);
+    ctx.strokeStyle = r.color;
+    ctx.globalAlpha = r.alpha;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  });
+
+  // Nodes
+  nodes.forEach(n => {
+    // Glow
+    if (n.pulseT > 0 && n.glowColor) {
+      const grad = ctx.createRadialGradient(n.x, n.y, n.radius, n.x, n.y, n.radius + 20 * n.pulseT);
+      grad.addColorStop(0, n.glowColor + '60');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, n.radius + 20 * n.pulseT, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Body
+    const grad = ctx.createRadialGradient(n.x - n.radius * 0.3, n.y - n.radius * 0.3, 0, n.x, n.y, n.radius);
+    grad.addColorStop(0, '#a29bfe');
+    grad.addColorStop(1, n.color);
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Border
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Label (for bigger nodes)
+    if (n.radius > 10) {
+      ctx.fillStyle = '#fff';
+      ctx.font = '10px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(n.name, n.x, n.y + n.radius + 14);
+    }
+  });
+}
+
+function animate() {
+  tick();
+  draw();
+  animFrame = requestAnimationFrame(animate);
+}
+
+// ── TOOLTIP ──
+function onMouseMove(e) {
+  const rect = canvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  let found = null;
+  for (const n of nodes) {
+    const dx = mx - n.x, dy = my - n.y;
+    if (dx * dx + dy * dy < n.radius * n.radius + 100) {
+      found = n; break;
+    }
+  }
+
+  const tt = document.getElementById('tooltip');
+  if (found) {
+    document.getElementById('ttName').textContent = found.name;
+    document.getElementById('ttDetail').innerHTML =
+      `MBTI: ${found.mbti}<br>Mood: ${found.mood}<br>Influence: ${found.influence.toFixed(2)}<br>Followers: ${found.followers}`;
+    tt.style.display = 'block';
+    tt.style.left = (e.clientX - canvas.parentElement.getBoundingClientRect().left + 12) + 'px';
+    tt.style.top = (e.clientY - canvas.parentElement.getBoundingClientRect().top - 20) + 'px';
+  } else {
+    tt.style.display = 'none';
+  }
+}
+
+// ── SSE ──
+let evtSource;
+
+function connectSSE() {
+  if (evtSource) evtSource.close();
+  evtSource = new EventSource('/events');
+  evtSource.onmessage = e => {
+    try {
+      const msg = JSON.parse(e.data);
+      handleEvent(msg);
+    } catch (err) {}
+  };
+}
+
+function handleEvent(msg) {
+  const { type, payload } = msg;
+
+  if (type === 'ping') return;
+
+  if (type === 'phase') {
+    setStatus(true, `Phase ${payload.phase}: ${payload.message}`);
+    addFeedItem('phase', null, payload.message, '');
+  }
+
+  if (type === 'agent_created') {
+    const n = {
+      id: payload.id,
+      name: payload.name,
+      influence: payload.influence_score,
+      mbti: payload.mbti,
+      mood: payload.mood,
+      followers: 0,
+      x: W / 2 + (Math.random() - 0.5) * 200,
+      y: H / 2 + (Math.random() - 0.5) * 200,
+      vx: 0, vy: 0,
+      radius: 6 + payload.influence_score * 14,
+      color: '#6c5ce7',
+      pulseT: 0,
+      glowColor: null,
+    };
+    nodes.push(n);
+    nodeMap[n.id] = n;
+    document.getElementById('emptyState').style.display = 'none';
+  }
+
+  if (type === 'graph_built') {
+    edges.length = 0;
+    (payload.graph.edges || []).forEach(e => {
+      edges.push({ source: e.source, target: e.target, flash: 0, flashColor: null });
+    });
+    // Update follower counts
+    (payload.graph.nodes || []).forEach(gn => {
+      if (nodeMap[gn.id]) nodeMap[gn.id].followers = gn.followers;
+    });
+    if (!animFrame) animate();
+  }
+
+  if (type === 'reaction') {
+    const node = nodeMap[payload.agentId];
+    if (node) {
+      const color = actionColors[payload.action] || '#6c5ce7';
+      node.pulseT = 1;
+      node.glowColor = color;
+      node.mood = payload.mood;
+
+      // Spawn ripples
+      ripples.push({ nodeId: node.id, t: 0, radius: 0, maxRadius: 40 + node.radius, color, alpha: 0.5 });
+      ripples.push({ nodeId: node.id, t: -0.15, radius: 0, maxRadius: 60 + node.radius, color, alpha: 0.5 });
+      ripples.push({ nodeId: node.id, t: -0.3, radius: 0, maxRadius: 80 + node.radius, color, alpha: 0.5 });
+
+      // Flash edges from this node
+      edges.forEach(e => {
+        if (e.source === payload.agentId || e.target === payload.agentId) {
+          e.flash = 1;
+          e.flashColor = color;
+        }
+      });
+
+      // Spawn particles along outgoing edges
+      edges.filter(e => e.source === payload.agentId).slice(0, 3).forEach(e => {
+        particles.push({
+          source: e.source, target: e.target,
+          t: 0, speed: 0.015 + Math.random() * 0.01,
+          color: color, x: 0, y: 0,
+        });
+      });
+    }
+
+    if (payload.action !== 'ignore') {
+      addFeedItem(payload.action, payload.agentName, payload.content, payload.reasoning);
+    }
+  }
+
+  if (type === 'result') {
+    document.getElementById('metricsCard').style.display = '';
+    document.getElementById('metricsGen').textContent = 'Gen ' + payload.generation;
+    document.getElementById('mLikes').textContent = payload.likes;
+    document.getElementById('mComments').textContent = payload.comments;
+    document.getElementById('mShares').textContent = payload.shares;
+    document.getElementById('mMocks').textContent = payload.mocks;
+    document.getElementById('mSentiment').textContent = payload.sentiment.toFixed(2);
+    document.getElementById('mFitness').textContent = payload.fitness.toFixed(2);
+  }
+
+  if (type === 'evolution') {
+    const card = document.getElementById('evoCard');
+    card.style.display = '';
+    document.getElementById('evoGen').textContent = `Gen ${payload.generation} → ${payload.generation + 1}`;
+    document.getElementById('evoAnalysis').textContent = payload.analysis;
+
+    const stEl = document.getElementById('evoStrengths');
+    stEl.innerHTML = '';
+    (payload.strengths || []).forEach(s => {
+      const tag = document.createElement('span');
+      tag.className = 'evo-tag strength';
+      tag.textContent = s;
+      stEl.appendChild(tag);
+    });
+
+    const wkEl = document.getElementById('evoWeaknesses');
+    wkEl.innerHTML = '';
+    (payload.weaknesses || []).forEach(w => {
+      const tag = document.createElement('span');
+      tag.className = 'evo-tag weakness';
+      tag.textContent = w;
+      wkEl.appendChild(tag);
+    });
+
+    document.getElementById('evoRevised').textContent = payload.revised_content;
+  }
+
+  if (type === 'done') {
+    setStatus(false, `Complete — ${payload.generation} generation(s)`);
+    running = false;
+    document.getElementById('runBtn').disabled = false;
+    document.getElementById('runBtn').textContent = 'Launch Simulation';
+  }
+
+  if (type === 'error') {
+    setStatus(false, `Error: ${payload.message}`);
+    running = false;
+    document.getElementById('runBtn').disabled = false;
+    document.getElementById('runBtn').textContent = 'Launch Simulation';
+  }
+}
+
+// ── FEED ──
+function addFeedItem(action, name, content, reasoning) {
+  const feed = document.getElementById('feed');
+  const el = document.createElement('div');
+
+  if (action === 'phase') {
+    el.className = 'phase-banner';
+    el.textContent = content;
+  } else {
+    el.className = 'feed-item';
+    el.innerHTML = `
+      <div class="feed-item-header">
+        <span class="feed-agent">${name}</span>
+        <span class="feed-action ${action}">${action.replace('_', ' ')}</span>
+      </div>
+      ${content ? `<div class="feed-content">${escHtml(content)}</div>` : ''}
+      ${reasoning ? `<div class="feed-reasoning">${escHtml(reasoning)}</div>` : ''}
+    `;
+  }
+
+  feed.insertBefore(el, feed.firstChild);
+
+  // Cap feed items
+  while (feed.children.length > 100) feed.removeChild(feed.lastChild);
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ── CONTROLS ──
+function setStatus(active, text) {
+  document.getElementById('statusDot').className = active ? 'status-dot active' : 'status-dot';
+  document.getElementById('statusText').textContent = text;
+}
+
+async function startRun() {
+  if (running) return;
+  running = true;
+
+  // Reset
+  nodes.length = 0;
+  edges.length = 0;
+  particles.length = 0;
+  Object.keys(nodeMap).forEach(k => delete nodeMap[k]);
+  document.getElementById('feed').innerHTML = '';
+  document.getElementById('metricsCard').style.display = 'none';
+  document.getElementById('evoCard').style.display = 'none';
+  document.getElementById('emptyState').style.display = 'none';
+  if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true;
+  btn.textContent = 'Running...';
+  setStatus(true, 'Starting simulation...');
+
+  const body = {
+    content: document.getElementById('content').value,
+    image_description: document.getElementById('imageDesc').value,
+    target_audience: document.getElementById('audience').value,
+    goal: document.getElementById('goal').value,
+    num_agents: parseInt(document.getElementById('numAgents').value),
+    max_generations: parseInt(document.getElementById('maxGens').value),
+    num_ticks: parseInt(document.getElementById('numTicks').value),
+  };
+
+  try {
+    await fetch('/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  } catch (e) {
+    setStatus(false, 'Failed to start');
+    btn.disabled = false;
+    btn.textContent = 'Launch Simulation';
+    running = false;
+  }
+}
+
+// ── INIT ──
+initCanvas();
+connectSSE();
+</script>
+</body>
+</html>
