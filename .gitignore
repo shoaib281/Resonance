@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.env
+venv/
+.venv/
+runs/
+*.json
+!package.json
+!pyproject.toml
