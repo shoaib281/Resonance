@@ -1,9 +1,7 @@
-__pycache__/
-*.pyc
+build/
+.gradle/
+.idea/
+*.iml
 .env
-venv/
-.venv/
 runs/
-*.json
-!package.json
-!pyproject.toml
+out/
